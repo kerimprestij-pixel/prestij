@@ -58,6 +58,10 @@ const nextConfig: NextConfig = {
   experimental: {
     // Styled 404 for URLs outside every root layout (/api/x, /media/x, …): src/app/global-not-found.tsx
     globalNotFound: true,
+    // One prerender worker on Vercel: the build reaches Supabase through its session pooler, where every
+    // client takes a server connection (pool size 15 on the Free plan). Pro's larger build machines would
+    // otherwise start a worker per CPU, each with two DB pools (src/db/connection-options.ts BUILD_POOL_MAX).
+    ...(process.env.VERCEL ? { cpus: 1 } : {}),
   },
   async headers() {
     return [

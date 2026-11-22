@@ -4,7 +4,16 @@
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { describe, test } from "node:test";
-import { IDLE_TIMEOUT_SECONDS, isSupabaseHost, sslOptionFor } from "@/db/connection-options";
+import {
+  BUILD_POOL_MAX,
+  BUILD_QUERY_TIMEOUT_SECONDS,
+  IDLE_TIMEOUT_SECONDS,
+  isSupabaseHost,
+  isSupabasePoolerHost,
+  POOLER_QUERY_TIMEOUT_SECONDS,
+  poolerOptionsFor,
+  sslOptionFor,
+} from "@/db/connection-options";
 import { isLocalHostname, productionSiteUrlError, publicSiteUrlProblem, SITE_URL_PROBLEM_TEXT } from "@/lib/deploy/site-url";
 import { emailDriverStatus, getEmailDriver } from "@/lib/email/drivers";
 import { cardPageCsp, cardPageHeaders, localPaymentMockAllowedIn, paytrFrameOriginFrom, PAYTR_DEFAULT_FRAME_ORIGIN } from "@/lib/security/card-page-csp";
@@ -146,6 +155,57 @@ describe("CF-15: postgres connection options", () => {
     assert.deepEqual(sslOptionFor("not a url"), {});
     assert.equal(isSupabaseHost("AWS-0-EU-CENTRAL-1.POOLER.SUPABASE.COM"), true);
     assert.equal(isSupabaseHost("notsupabase.co"), false);
+  });
+
+  const TX = "postgresql://postgres.ref:pw@aws-0-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=require";
+  const BUILD = { NEXT_PHASE: "phase-production-build" };
+
+  test("Supabase transaction pooler at run time: no prepared statements, no pipelining, a query time limit", () => {
+    assert.deepEqual(poolerOptionsFor(TX), { url: TX, prepare: false, max_pipeline: 1, query_timeout: POOLER_QUERY_TIMEOUT_SECONDS });
+    assert.deepEqual(poolerOptionsFor(TX, { NEXT_PHASE: "phase-production-server" }), poolerOptionsFor(TX));
+    assert.equal(POOLER_QUERY_TIMEOUT_SECONDS, 30);
+  });
+
+  test("next build: the same pooler host and credentials in session mode (port 5432), with pipelining", () => {
+    const build = poolerOptionsFor(TX, BUILD);
+    assert.equal(build.url, "postgresql://postgres.ref:pw@aws-0-eu-central-1.pooler.supabase.com:5432/postgres?sslmode=require");
+    assert.equal(build.prepare, true);
+    assert.equal(build.max_pipeline, undefined, "postgres.js default pipelining");
+    assert.equal(build.max, BUILD_POOL_MAX);
+    assert.ok(2 * BUILD_POOL_MAX <= 12, "one worker x two pools stays well under Supabase Free's session pool of 15");
+    assert.equal(build.query_timeout, BUILD_QUERY_TIMEOUT_SECONDS);
+    assert.ok(BUILD_QUERY_TIMEOUT_SECONDS < 54, "below Next's use-cache fill limit (0.9 × 60 s)");
+    // An encoded password and other query parameters survive the port change.
+    const encoded = "postgresql://postgres.ref:p%40ss%2Fw0rd@aws-0-eu-central-1.pooler.supabase.com:6543/postgres?sslmode=require&application_name=x";
+    assert.equal(poolerOptionsFor(encoded, BUILD).url, encoded.replace(":6543/", ":5432/"));
+  });
+
+  test("anything else keeps its URL and the earlier port-6543 rule for prepared statements", () => {
+    const local = "postgres://postgres:postgres@localhost:54329/prestij";
+    assert.deepEqual(poolerOptionsFor(local), { url: local, prepare: true });
+    assert.deepEqual(poolerOptionsFor(local, BUILD), { url: local, prepare: true }, "local builds unchanged");
+    const session = "postgresql://postgres.ref:pw@aws-0-eu-central-1.pooler.supabase.com:5432/postgres";
+    assert.deepEqual(poolerOptionsFor(session, BUILD), { url: session, prepare: true });
+    const direct = "postgresql://postgres:pw@db.ref.supabase.co:5432/postgres";
+    assert.deepEqual(poolerOptionsFor(direct), { url: direct, prepare: true });
+    const otherPooler = "postgres://u:p@pgbouncer.example.com:6543/db";
+    assert.deepEqual(poolerOptionsFor(otherPooler, BUILD), { url: otherPooler, prepare: false });
+    assert.deepEqual(poolerOptionsFor("postgres://u:p@supabase.com.evil.example:6543/x", BUILD), { url: "postgres://u:p@supabase.com.evil.example:6543/x", prepare: false });
+    assert.deepEqual(poolerOptionsFor("not a url"), { url: "not a url", prepare: true });
+    assert.equal(isSupabasePoolerHost("AWS-0-EU-CENTRAL-1.POOLER.SUPABASE.COM."), true);
+    assert.equal(isSupabasePoolerHost("db.ref.supabase.co"), false);
+  });
+
+  test("src/db/index.ts connects with the pooler options and their URL", () => {
+    const source = readFileSync("src/db/index.ts", "utf8");
+    assert.match(source, /const \{ url, \.\.\.poolerOptions \} = poolerOptionsFor\(databaseUrl, process\.env\);/);
+    assert.match(source, /postgres\(url, \{[\s\S]*max: [^\n]*\n[\s\S]*\.\.\.poolerOptions,[\s\S]*\.\.\.sslOptionFor\(url, process\.env\)/, "the pooler's max overrides the default");
+    assert.doesNotMatch(source, /prepare: !url\.includes/);
+  });
+
+  test("Vercel builds prerender with one worker (session pooler client count)", () => {
+    const config = readFileSync("next.config.ts", "utf8");
+    assert.match(config, /experimental: \{[\s\S]*\.\.\.\(process\.env\.VERCEL \? \{ cpus: 1 \} : \{\}\),[\s\S]*\},/);
   });
 });
 
