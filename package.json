@@ -1,0 +1,67 @@
+{
+  "name": "prestij",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "26.x"
+  },
+  "scripts": {
+    "dev": "node scripts/db-server.mjs start && next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test \"tests/unit/**/*.test.ts\"",
+    "test:db": "tsx --env-file=.env.local tests/db/setup/local-only.ts && node scripts/db-server.mjs start && tsx --test --test-concurrency=1 --conditions=react-server --env-file=.env.local --import ./tests/db/setup/local-only.ts \"tests/db/**/*.test.ts\"",
+    "db": "node scripts/db-server.mjs start",
+    "db:stop": "node scripts/db-server.mjs stop",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx --conditions=react-server --env-file=.env.local scripts/seed.ts",
+    "admin:create": "tsx --conditions=react-server --env-file=.env.local scripts/create-admin.ts",
+    "db:setup": "npm run db && npm run db:migrate && npm run db:seed && npm run admin:create"
+  },
+  "dependencies": {
+    "better-auth": "^1.7.18",
+    "clsx": "^2.1.1",
+    "culori": "^4.0.2",
+    "drizzle-orm": "^0.45.4",
+    "lucide-react": "^1.70.0",
+    "motion": "^14.10.0",
+    "next": "16.4.5",
+    "next-themes": "^0.4.6",
+    "nodemailer": "^10.2.1",
+    "postgres": "^4.1.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "sharp": "^0.35.5",
+    "tailwind-merge": "^3.7.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "^4",
+    "@types/culori": "^4.0.1",
+    "@types/node": "^20",
+    "@types/nodemailer": "^8.0.2",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "dotenv": "^18.0.9",
+    "drizzle-kit": "^0.31.11",
+    "embedded-postgres": "^17.11.0-beta.19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.5",
+    "tailwindcss": "^4",
+    "tsx": "^4.23.15",
+    "typescript": "^5"
+  },
+  "overrides": {
+    "@esbuild-kit/core-utils": {
+      "esbuild": "0.28.2"
+    },
+    "@esbuild-kit/esm-loader": {
+      "esbuild": "0.28.2"
+    }
+  }
+}

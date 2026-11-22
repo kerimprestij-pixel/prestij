@@ -1,0 +1,382 @@
+@import "tailwindcss";
+
+/*
+ * PRESTİJ design tokens.
+ * Runtime values come from <ThemeStyle/> (src/lib/theme/engine.ts → :root and .dark, unlayered, so they
+ * always win). The @layer base block below holds the same values for the default theme as a fallback
+ * for layouts that do not render <ThemeStyle/> (e.g. the panel).
+ */
+
+/* Dark mode = class "dark" on <html> (set before paint by ThemeScript, changed by ThemeToggle). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* A real hover pointer (mouse, trackpad): for hover-only extras that touch screens should not download. */
+@custom-variant can-hover {
+  @media (hover: hover) and (pointer: fine) {
+    @slot;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-ring: var(--ring);
+
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
+  --color-brand: var(--brand);
+  --color-brand-contrast: var(--brand-contrast);
+
+  --color-gold-50: var(--gold-50);
+  --color-gold-100: var(--gold-100);
+  --color-gold-200: var(--gold-200);
+  --color-gold-300: var(--gold-300);
+  --color-gold-400: var(--gold-400);
+  --color-gold-500: var(--gold-500);
+  --color-gold-600: var(--gold-600);
+  --color-gold-700: var(--gold-700);
+  --color-gold-800: var(--gold-800);
+  --color-gold-900: var(--gold-900);
+  --color-gold-950: var(--gold-950);
+  --color-gold: var(--gold);
+  --color-gold-contrast: var(--gold-contrast);
+  /* AA-safe gold for small text on bg/surface/surface-2 (the logo gold itself is for fills and lines). */
+  --color-gold-text: var(--gold-text);
+
+  --color-product: var(--product);
+  --color-product-soft: var(--product-soft);
+  --color-product-strong: var(--product-strong);
+  --color-product-contrast: var(--product-contrast);
+
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-heading);
+
+  --radius-xs: calc(var(--radius) * 0.25);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) * 1.5);
+  --radius-xl: calc(var(--radius) * 2);
+  --radius-2xl: calc(var(--radius) * 3);
+  /* Buttons/inputs: equals --radius, or a pill when the theme radius is "full". */
+  --radius-control: var(--control-radius);
+
+  --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
+  --animate-fade-up: fade-up 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.7s ease-out both;
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 0.875rem, 0);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+/* "--font-heading"/"--font-body" are runtime variables, so these utilities read them directly. */
+@utility font-heading {
+  font-family: var(--font-heading);
+}
+@utility font-body {
+  font-family: var(--font-body);
+}
+
+@layer base {
+  /* @generated theme-fallback:start (npx tsx scripts/check-theme.ts --write) */
+  :root {
+    color-scheme: light;
+    --bg: #f9f8f5;
+    --surface: #ffffff;
+    --surface-2: #f0eee8;
+    --text: #14284b;
+    --text-muted: #55657f;
+    --border: #e4e1d9;
+    --border-strong: #758297;
+    --ring: #a17c28;
+    --brand-50: #f3f7fe;
+    --brand-100: #dfeafc;
+    --brand-200: #c2d7fa;
+    --brand-300: #9abdf7;
+    --brand-400: #72a0ec;
+    --brand-500: #5385d7;
+    --brand-600: #396aba;
+    --brand-700: #275198;
+    --brand-800: #183c77;
+    --brand-900: #03265f;
+    --brand-950: #021538;
+    --brand: #03265f;
+    --brand-contrast: #ffffff;
+    --gold-50: #fbf3e4;
+    --gold-100: #f3e2c2;
+    --gold-200: #e9c98b;
+    --gold-300: #dda82a;
+    --gold-400: #bc912e;
+    --gold-500: #a17c28;
+    --gold-600: #83641d;
+    --gold-700: #694f16;
+    --gold-800: #4f3b0e;
+    --gold-900: #362807;
+    --gold-950: #1f1503;
+    --gold: #dda82a;
+    --gold-contrast: #0b1630;
+    --gold-text: #83641d;
+    --product: var(--gold);
+    --product-soft: #f3e2c2;
+    --product-strong: #694f16;
+    --product-contrast: var(--gold-contrast);
+    --radius: 0.5rem;
+    --control-radius: 0.5rem;
+    --font-heading: var(--font-cormorant, Georgia), Georgia, "Times New Roman", serif;
+    --font-heading-italic: var(--font-cormorant-italic, var(--font-cormorant, Georgia)), Georgia, "Times New Roman", serif;
+    --font-body: var(--font-manrope, ui-sans-serif), ui-sans-serif, system-ui, sans-serif;
+  }
+  .dark {
+    color-scheme: dark;
+    --bg: #09111e;
+    --surface: #111927;
+    --surface-2: #1a2231;
+    --text: #f9f8f5;
+    --text-muted: #8e9298;
+    --border: #222d3f;
+    --border-strong: #6b7179;
+    --ring: #daa93e;
+    --brand: #d2e1f9;
+    --brand-contrast: #0b1630;
+    --gold: #daa93e;
+    --gold-contrast: #0b1630;
+    --gold-text: #daa93e;
+    --product: var(--gold);
+    --product-soft: #1f1503;
+    --product-strong: #dda82a;
+    --product-contrast: var(--gold-contrast);
+  }
+  /* @generated theme-fallback:end */
+
+  /* Product palette fallback (= gold) so `product-scope` without an inline style still renders. */
+  :root {
+    --p-50: var(--gold-50);
+    --p-100: var(--gold-100);
+    --p-200: var(--gold-200);
+    --p-300: var(--gold-300);
+    --p-400: var(--gold-400);
+    --p-500: var(--gold-500);
+    --p-600: var(--gold-600);
+    --p-700: var(--gold-700);
+    --p-800: var(--gold-800);
+    --p-900: var(--gold-900);
+    --p-950: var(--gold-950);
+  }
+
+  html {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    min-height: 100dvh;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.65;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
+    font-weight: 500;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    text-wrap: balance;
+  }
+
+  /* Cormorant's default old-style figures make "1" read as "ı" and "0" as "o" in order numbers,
+     counts and prices. Lining figures through font-feature-settings, so they combine with the
+     tabular-nums utility (which rewrites font-variant-numeric). */
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-heading {
+    font-feature-settings: "lnum" 1;
+  }
+
+  /* Italic heading text: Cormorant italic is its own face that is not preloaded (src/lib/fonts.ts), so
+     on italic elements --font-heading becomes the italic stack (theme engine) and `font-heading italic`
+     text keeps the true italic. Rich-text blockquotes set the same variable (RichText.tsx). em/i inside
+     heading text would inherit the parent's roman family, so they pick the font up again. */
+  :is(.italic, em, i, cite) {
+    --font-heading: var(--font-heading-italic);
+  }
+  :is(h1, h2, h3, h4, .font-heading) :is(em, i, cite) {
+    font-family: var(--font-heading);
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background-color: var(--gold);
+    color: var(--gold-contrast);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+
+  html[lang="ar"] body {
+    line-height: 1.85;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Small uppercase, letter-spaced gold label above headings. */
+  .eyebrow {
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--gold-text);
+  }
+
+  .container-x {
+    width: 100%;
+    max-width: 82rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 40rem) {
+    .container-x {
+      padding-inline: 2rem;
+    }
+  }
+  @media (min-width: 64rem) {
+    .container-x {
+      padding-inline: 3rem;
+    }
+  }
+
+  .hairline {
+    border: 1px solid var(--border);
+  }
+
+  /*
+   * Inverse (navy) surfaces such as the footer and the "brand" announcement bar. In dark mode
+   * --brand turns into a pale tint for buttons and text, so these surfaces pin it to deep navy.
+   */
+  .dark .surface-inverse {
+    --brand: var(--brand-900);
+    --brand-contrast: #ffffff;
+  }
+
+  /*
+   * Per-product colors: <div className="product-scope" style={productScopeStyle(hex)}>.
+   * The inline style sets --p-* (see engine.ts productScopeVars); fallbacks resolve to gold.
+   */
+  .product-scope {
+    --product: var(--p-base, var(--gold));
+    --product-contrast: var(--p-contrast, var(--gold-contrast));
+    --product-soft: var(--p-soft, var(--p-100, var(--gold-100)));
+    --product-strong: var(--p-strong, var(--p-700, var(--gold-700)));
+  }
+  .dark .product-scope {
+    --product: var(--p-base-dark, var(--gold));
+    --product-contrast: var(--p-contrast-dark, var(--gold-contrast));
+    --product-soft: var(--p-soft-dark, var(--p-950, var(--gold-950)));
+    --product-strong: var(--p-strong-dark, var(--p-300, var(--gold-300)));
+  }
+
+  /* Barely-there paper grain behind the content of a section. */
+  .grain {
+    position: relative;
+    isolation: isolate;
+  }
+  .grain::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0.05;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .dark .grain::after {
+    opacity: 0.07;
+    mix-blend-mode: soft-light;
+  }
+}
+
+/*
+ * Arabic: switch to Arabic faces and never letter-space (it breaks cursive joining).
+ * Unlayered on purpose: it must beat <ThemeStyle/>'s :root fonts and any tracking-* utility.
+ */
+html[lang="ar"] {
+  --font-heading: var(--font-naskh, serif), var(--font-cormorant, serif), serif;
+  /* No separate italic face for Arabic (italic text is mostly rtl:not-italic): the same stack. */
+  --font-heading-italic: var(--font-heading);
+  --font-body: var(--font-plex-arabic, sans-serif), var(--font-manrope, sans-serif), sans-serif;
+}
+html[lang="ar"] :is(h1, h2, h3, h4, h5, h6, .eyebrow, [class*="tracking-"]) {
+  letter-spacing: 0;
+}
+
+/*
+ * A page that renders its own newsletter section does not repeat the footer's sign-up band.
+ * Unlayered on purpose: it must beat the band's `grid` utility.
+ */
+body:has([data-newsletter-section]) [data-footer-newsletter] {
+  display: none;
+}
